@@ -1,0 +1,114 @@
+# Winning index combinations on the 3x3 board
+WINNING_LINES = (
+    (0, 1, 2), (3, 4, 5), (6, 7, 8),  # Rows
+    (0, 3, 6), (1, 4, 7), (2, 5, 8),  # Columns
+    (0, 4, 8), (2, 4, 6),              # Diagonals
+)
+
+# ANSI escape codes for terminal colors (makes the project pop!)
+RED = "\033[91m"
+BLUE = "\033[94m"
+RESET = "\033[0m"
+
+
+def display_board(board):
+    """Print the board using positions 1 through 9 for empty cells with colors."""
+    cells = []
+    for index, mark in enumerate(board):
+        if mark == "X":
+            cells.append(f"{RED}X{RESET}")
+        elif mark == "O":
+            cells.append(f"{BLUE}O{RESET}")
+        else:
+            cells.append(str(index + 1))
+
+    print(f"\n {cells[0]} | {cells[1]} | {cells[2]}")
+    print("---+---+---")
+    print(f" {cells[3]} | {cells[4]} | {cells[5]}")
+    print("---+---+---")
+    print(f" {cells[6]} | {cells[7]} | {cells[8]}\n")
+
+
+def take_move(board, player):
+    """Ask for and apply one valid move. Return False on end of input."""
+    while True:
+        try:
+            raw_position = input(f"Player {player}, choose a position (1-9): ").strip()
+        except EOFError:
+            print("\nThanks for playing!")
+            return False
+
+        try:
+            position = int(raw_position)
+        except ValueError:
+            print("⚠️ Invalid input. Please enter a number from 1 to 9.")
+            continue
+
+        if not 1 <= position <= 9:
+            print("⚠️ Out of range! Enter a number between 1 and 9.")
+            continue
+        if board[position - 1] != " ":
+            print(f"⚠️ Position {position} is already taken. Choose another.")
+            continue
+
+        board[position - 1] = player
+        return True
+
+
+def winning_line(board):
+    """Return the winning line (as 1-based positions), or None."""
+    for line in WINNING_LINES:
+        if board[line[0]] != " " and board[line[0]] == board[line[1]] == board[line[2]]:
+            return tuple(position + 1 for position in line)
+    return None
+
+
+def play_game():
+    """Play one complete game and announce a win or draw."""
+    board = [" "] * 9
+    player = "X"
+    
+    print("\n" + "=" * 30)
+    print("      NEW TIC-TAC-TOE MATCH      ")
+    print("=" * 30)
+
+    for _ in range(9):
+        display_board(board)
+        if not take_move(board, player):
+            return
+        
+        line = winning_line(board)
+        if line:
+            display_board(board)
+            print(f"🎉 Congratulations! Player {player} wins the match!")
+            print(f"Winning line positions: " + "-".join(map(str, line)))
+            return
+            
+        if " " not in board:
+            display_board(board)
+            print("🤝 It's a draw! The board is full.")
+            return
+            
+        player = "O" if player == "X" else "X"
+
+
+def main():
+    print("****************************************")
+    print("     WELCOME TO PYTHON TIC-TAC-TOE      ")
+    print("****************************************")
+    
+    while True:
+        play_game()
+        try:
+            again = input("\nWould you like to play again? (y/n): ").strip().lower()
+        except EOFError:
+            print("\nThanks for playing!")
+            break
+            
+        if again not in ("y", "yes"):
+            print("\nThanks for playing! Goodbye 👋")
+            break
+
+
+if __name__ == "__main__":
+    main()
